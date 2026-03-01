@@ -1,58 +1,69 @@
 import * as THREE from 'https://cdn.skypack.dev/three@0.132.2';
 
-// MOTOR VISUAL TITAN B - ALTA FIDELIDAD
-let scene, camera, renderer, robot;
-
-function init() {
+export function init3D() {
     const container = document.getElementById('robot-view');
-    if(!container) return;
+    if (!container) return;
 
-    scene = new THREE.Scene();
-    camera = new THREE.PerspectiveCamera(75, container.clientWidth / container.clientHeight, 0.1, 1000);
+    // Crear Escena
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(75, container.clientWidth / container.clientHeight, 0.1, 1000);
     camera.position.z = 3;
 
-    renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+    // Crear Renderer
+    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
     renderer.setSize(container.clientWidth, container.clientHeight);
+    renderer.setPixelRatio(window.devicePixelRatio);
+    container.innerHTML = ''; // Limpiar cualquier residuo
     container.appendChild(renderer.domElement);
 
-    // Luces Cinematográficas (Cian y Fucsia)
-    const light1 = new THREE.PointLight(0x00e5ff, 2, 50);
-    light1.position.set(5, 5, 5);
-    scene.add(light1);
+    // Iluminación Táctica
+    const light = new THREE.PointLight(0x00e5ff, 2, 50);
+    light.position.set(5, 5, 5);
+    scene.add(light);
+    scene.add(new THREE.AmbientLight(0x404040, 2));
 
-    const light2 = new THREE.PointLight(0ff00de, 2, 50);
-    light2.position.set(-5, -5, 5);
-    scene.add(light2);
-
-    // Creación del Titán (Geometría Táctica)
-    const geometry = new THREE.CapsuleGeometry(0.5, 1, 4, 8);
-    const material = new THREE.MeshStandardMaterial({ 
-        color: 0x333333, 
-        metalness: 0.9, 
+    // EL TITÁN (Geometría Táctica Pro)
+    const titanGroup = new THREE.Group();
+    
+    // Cuerpo
+    const bodyGeom = new THREE.OctahedronGeometry(1, 0);
+    const bodyMat = new THREE.MeshStandardMaterial({ 
+        color: 0x111111, 
+        metalness: 1, 
         roughness: 0.1,
         emissive: 0x00e5ff,
         emissiveIntensity: 0.2
     });
-    robot = new THREE.Mesh(geometry, material);
-    scene.add(robot);
+    const body = new THREE.Mesh(bodyGeom, bodyMat);
+    titanGroup.add(body);
 
-    animate();
-}
+    // Núcleo de Energía (El corazón rosa)
+    const coreGeom = new THREE.SphereGeometry(0.3, 16, 16);
+    const coreMat = new THREE.MeshBasicMaterial({ color: 0xff00de });
+    const core = new THREE.Mesh(coreGeom, coreMat);
+    core.position.z = 0.5;
+    titanGroup.add(core);
 
-function animate() {
-    requestAnimationFrame(animate);
-    if(robot) {
-        robot.rotation.y += 0.01;
-        robot.position.y = Math.sin(Date.now() * 0.002) * 0.1;
+    scene.add(titanGroup);
+
+    // Animación
+    function animate() {
+        requestAnimationFrame(animate);
+        titanGroup.rotation.y += 0.01;
+        titanGroup.rotation.x += 0.005;
+        
+        // Efecto de pulso en el núcleo
+        const s = 1 + Math.sin(Date.now() * 0.005) * 0.2;
+        core.scale.set(s, s, s);
+        
+        renderer.render(scene, camera);
     }
-    renderer.render(scene, camera);
+    animate();
+
+    // Ajuste de pantalla
+    window.addEventListener('resize', () => {
+        camera.aspect = container.clientWidth / container.clientHeight;
+        camera.updateProjectionMatrix();
+        renderer.setSize(container.clientWidth, container.clientHeight);
+    });
 }
-
-window.addEventListener('resize', () => {
-    const container = document.getElementById('robot-view');
-    camera.aspect = container.clientWidth / container.clientHeight;
-    camera.updateProjectionMatrix();
-    renderer.setSize(container.clientWidth, container.clientHeight);
-});
-
-init();
