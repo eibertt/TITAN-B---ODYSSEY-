@@ -4,80 +4,97 @@ export function init3D() {
     const container = document.getElementById('robot-view');
     if (!container) return;
 
-    // Crear Escena
     const scene = new THREE.Scene();
-    const camera = new THREE.PerspectiveCamera(75, container.clientWidth / container.clientHeight, 0.1, 1000);
-    camera.position.z = 3;
+    const camera = new THREE.PerspectiveCamera(60, container.clientWidth / container.clientHeight, 0.1, 1000);
+    camera.position.set(0, 0.5, 4);
 
-    // Crear Renderer
     const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
     renderer.setSize(container.clientWidth, container.clientHeight);
-    renderer.setPixelRatio(window.devicePixelRatio);
-    container.innerHTML = ''; // Limpiar cualquier residuo
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    container.innerHTML = '';
     container.appendChild(renderer.domElement);
 
-    // Iluminación Táctica
-    const light = new THREE.PointLight(0x00e5ff, 2, 50);
-    light.position.set(5, 5, 5);
-    scene.add(light);
-    scene.add(new THREE.AmbientLight(0x404040, 2));
+    // --- ILUMINACIÓN CINEMATOGRÁFICA ---
+    const light1 = new THREE.PointLight(0x00e5ff, 2, 10);
+    light1.position.set(2, 2, 2);
+    scene.add(light1);
 
-        // EL TITÁN (Evolución Táctica)
-    const titanGroup = new THREE.Group();
-    
-    const bodyMat = new THREE.MeshStandardMaterial({ 
-        color: 0x111111, 
-        metalness: 1, 
-        roughness: 0.2,
-        emissive: 0x00e5ff,
-        emissiveIntensity: 0.1
+    const light2 = new THREE.PointLight(0xff00de, 1.5, 10);
+    light2.position.set(-2, -1, 2);
+    scene.add(light2);
+
+    const ambient = new THREE.AmbientLight(0x404040, 1.5);
+    scene.add(ambient);
+
+    // --- MATERIALES DE ALTA FIDELIDAD ---
+    const armorMat = new THREE.MeshStandardMaterial({ 
+        color: 0x080808, metalness: 1, roughness: 0.15 
     });
+    const neonMat = new THREE.MeshBasicMaterial({ color: 0x00e5ff });
+    const coreMat = new THREE.MeshBasicMaterial({ color: 0xff00de });
 
-    // Torso (Hexagonal)
-    const torso = new THREE.Mesh(new THREE.CylinderGeometry(0.6, 0.8, 1.2, 6), bodyMat);
+    const titanGroup = new THREE.Group();
+
+    // 1. TORSO SUPERIOR (Trapezoide)
+    const torso = new THREE.Mesh(new THREE.CylinderGeometry(0.7, 0.4, 1.2, 6), armorMat);
     titanGroup.add(torso);
 
-    // Cabeza (Octaedro pequeño)
-    const head = new THREE.Mesh(new THREE.OctahedronGeometry(0.3, 0), bodyMat);
-    head.position.y = 0.9;
-    titanGroup.add(head);
+    // 2. CABEZA TÁCTICA
+    const headGroup = new THREE.Group();
+    const headBase = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.4, 0.4), armorMat);
+    const visor = new THREE.Mesh(new THREE.PlaneGeometry(0.4, 0.05), neonMat);
+    visor.position.set(0, 0.05, 0.21);
+    headGroup.add(headBase, visor);
+    headGroup.position.y = 0.9;
+    titanGroup.add(headGroup);
 
-    // Hombros/Protectores
-    const shoulderGeom = new THREE.BoxGeometry(0.4, 0.4, 0.4);
-    const leftShoulder = new THREE.Mesh(shoulderGeom, bodyMat);
-    leftShoulder.position.set(-0.8, 0.4, 0);
-    titanGroup.add(leftShoulder);
+    // 3. HOMBROS REFORZADOS (Exoesqueleto)
+    const createShoulder = (x) => {
+        const sGroup = new THREE.Group();
+        const pad = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.3, 0.6), armorMat);
+        const join = new THREE.Mesh(new THREE.CylinderGeometry(0.1, 0.1, 0.4), armorMat);
+        join.rotation.z = Math.PI / 2;
+        sGroup.add(pad, join);
+        sGroup.position.set(x, 0.5, 0);
+        return sGroup;
+    };
+    titanGroup.add(createShoulder(0.85), createShoulder(-0.85));
 
-    const rightShoulder = new THREE.Mesh(shoulderGeom, bodyMat);
-    rightShoulder.position.set(0.8, 0.4, 0);
-    titanGroup.add(rightShoulder);
+    // 4. ANTEBRAZOS (Lanzadores)
+    const createArm = (x) => {
+        const arm = new THREE.Mesh(new THREE.BoxGeometry(0.3, 0.8, 0.3), armorMat);
+        arm.position.set(x, -0.2, 0);
+        return arm;
+    };
+    titanGroup.add(createArm(0.9), createArm(-0.9));
 
-    // Núcleo Central (Corazón Rosa)
-    const core = new THREE.Mesh(
-        new THREE.SphereGeometry(0.25, 16, 16), 
-        new THREE.MeshBasicMaterial({ color: 0xff00de })
-    );
+    // 5. NÚCLEO DE FUSIÓN (Efecto de profundidad)
+    const core = new THREE.Mesh(new THREE.SphereGeometry(0.2, 16, 16), coreMat);
     core.position.set(0, 0.2, 0.4);
     titanGroup.add(core);
 
     scene.add(titanGroup);
 
-
-    // Animación
+    // --- ANIMACIÓN DE PRECISIÓN ---
     function animate() {
         requestAnimationFrame(animate);
-        titanGroup.rotation.y += 0.01;
-        titanGroup.rotation.x += 0.005;
+        const t = Date.now() * 0.001;
+
+        // Movimiento de flotación suave (Respiración)
+        titanGroup.position.y = Math.sin(t) * 0.1;
         
-        // Efecto de pulso en el núcleo
-        const s = 1 + Math.sin(Date.now() * 0.005) * 0.2;
-        core.scale.set(s, s, s);
-        
+        // Rotación lenta para mostrar los detalles 3D
+        titanGroup.rotation.y = Math.sin(t * 0.5) * 0.3;
+
+        // Pulso del núcleo y visor
+        const pulse = 0.7 + Math.sin(t * 4) * 0.3;
+        core.scale.setScalar(pulse);
+        visor.material.opacity = pulse;
+
         renderer.render(scene, camera);
     }
     animate();
 
-    // Ajuste de pantalla
     window.addEventListener('resize', () => {
         camera.aspect = container.clientWidth / container.clientHeight;
         camera.updateProjectionMatrix();
