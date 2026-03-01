@@ -14,82 +14,94 @@ export function init3D() {
     container.innerHTML = '';
     container.appendChild(renderer.domElement);
 
-    // --- ILUMINACIÓN CINEMATOGRÁFICA ---
-    const light1 = new THREE.PointLight(0x00e5ff, 2, 10);
-    light1.position.set(2, 2, 2);
-    scene.add(light1);
+    // --- ILUMINACIÓN DE HANGAR ESPACIAL ---
+    const blueLight = new THREE.PointLight(0x00e5ff, 2.5, 10);
+    blueLight.position.set(2, 2, 2);
+    scene.add(blueLight);
 
-    const light2 = new THREE.PointLight(0xff00de, 1.5, 10);
-    light2.position.set(-2, -1, 2);
-    scene.add(light2);
+    const pinkLight = new THREE.PointLight(0xff00de, 2, 10);
+    pinkLight.position.set(-2, -1, 2);
+    scene.add(pinkLight);
 
-    const ambient = new THREE.AmbientLight(0x404040, 1.5);
+    const ambient = new THREE.AmbientLight(0xffffff, 0.3);
     scene.add(ambient);
 
-    // --- MATERIALES DE ALTA FIDELIDAD ---
+    // --- MATERIALES INDUSTRIALES ---
     const armorMat = new THREE.MeshStandardMaterial({ 
-        color: 0x080808, metalness: 1, roughness: 0.15 
+        color: 0x0a0a0a, 
+        metalness: 1, 
+        roughness: 0.2,
+        emissive: 0x00e5ff,
+        emissiveIntensity: 0.05
     });
-    const neonMat = new THREE.MeshBasicMaterial({ color: 0x00e5ff });
+    
+    const glowMat = new THREE.MeshBasicMaterial({ color: 0x00e5ff });
     const coreMat = new THREE.MeshBasicMaterial({ color: 0xff00de });
 
     const titanGroup = new THREE.Group();
 
-    // 1. TORSO SUPERIOR (Trapezoide)
+    // 1. TORSO SUPERIOR (Chasis Principal)
     const torso = new THREE.Mesh(new THREE.CylinderGeometry(0.7, 0.4, 1.2, 6), armorMat);
     titanGroup.add(torso);
 
-    // 2. CABEZA TÁCTICA
+    // 2. CABEZA CON VISOR (IA Activa)
     const headGroup = new THREE.Group();
-    const headBase = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.4, 0.4), armorMat);
-    const visor = new THREE.Mesh(new THREE.PlaneGeometry(0.4, 0.05), neonMat);
+    const headBase = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.35, 0.4), armorMat);
+    const visor = new THREE.Mesh(new THREE.PlaneGeometry(0.4, 0.06), glowMat);
     visor.position.set(0, 0.05, 0.21);
     headGroup.add(headBase, visor);
-    headGroup.position.y = 0.9;
+    headGroup.position.y = 0.95;
     titanGroup.add(headGroup);
 
-    // 3. HOMBROS REFORZADOS (Exoesqueleto)
-    const createShoulder = (x) => {
+    // 3. HOMBRETAS DE COMBATE (Simetría Perfecta)
+    const createShoulder = (xSide) => {
         const sGroup = new THREE.Group();
-        const pad = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.3, 0.6), armorMat);
-        const join = new THREE.Mesh(new THREE.CylinderGeometry(0.1, 0.1, 0.4), armorMat);
-        join.rotation.z = Math.PI / 2;
-        sGroup.add(pad, join);
-        sGroup.position.set(x, 0.5, 0);
+        const pad = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.4, 0.7), armorMat);
+        const joint = new THREE.Mesh(new THREE.CylinderGeometry(0.12, 0.12, 0.45), armorMat);
+        joint.rotation.z = Math.PI / 2;
+        sGroup.add(pad, joint);
+        sGroup.position.set(xSide * 0.9, 0.5, 0);
         return sGroup;
     };
-    titanGroup.add(createShoulder(0.85), createShoulder(-0.85));
+    titanGroup.add(createShoulder(1), createShoulder(-1));
 
-    // 4. ANTEBRAZOS (Lanzadores)
-    const createArm = (x) => {
-        const arm = new THREE.Mesh(new THREE.BoxGeometry(0.3, 0.8, 0.3), armorMat);
-        arm.position.set(x, -0.2, 0);
+    // 4. ANTEBRAZOS / LANZADORES
+    const createForearm = (xSide) => {
+        const arm = new THREE.Mesh(new THREE.BoxGeometry(0.35, 0.9, 0.35), armorMat);
+        arm.position.set(xSide * 1, -0.2, 0);
         return arm;
     };
-    titanGroup.add(createArm(0.9), createArm(-0.9));
+    titanGroup.add(createForearm(1), createForearm(-1));
 
-    // 5. NÚCLEO DE FUSIÓN (Efecto de profundidad)
-    const core = new THREE.Mesh(new THREE.SphereGeometry(0.2, 16, 16), coreMat);
-    core.position.set(0, 0.2, 0.4);
+    // 5. NÚCLEO DE FUSIÓN (Corazón del Titán)
+    const core = new THREE.Mesh(new THREE.SphereGeometry(0.22, 16, 16), coreMat);
+    core.position.set(0, 0.2, 0.45);
     titanGroup.add(core);
 
     scene.add(titanGroup);
 
-    // --- ANIMACIÓN DE PRECISIÓN ---
+    // --- MOTOR DE ANIMACIÓN DINÁMICA ---
     function animate() {
         requestAnimationFrame(animate);
-        const t = Date.now() * 0.001;
+        const time = Date.now() * 0.001;
 
-        // Movimiento de flotación suave (Respiración)
-        titanGroup.position.y = Math.sin(t) * 0.1;
+        // Balanceo de "Respiración" Cinematográfico
+        titanGroup.position.y = Math.sin(time * 0.8) * 0.12;
         
-        // Rotación lenta para mostrar los detalles 3D
-        titanGroup.rotation.y = Math.sin(t * 0.5) * 0.3;
+        // Rotación de escaneo lenta
+        titanGroup.rotation.y = Math.sin(time * 0.4) * 0.25;
 
-        // Pulso del núcleo y visor
-        const pulse = 0.7 + Math.sin(t * 4) * 0.3;
-        core.scale.setScalar(pulse);
-        visor.material.opacity = pulse;
+        // Pulso de Energía del Núcleo y Visor
+        const energyLevel = 0.8 + Math.sin(time * 5) * 0.2;
+        core.scale.setScalar(energyLevel);
+        visor.material.opacity = energyLevel;
+
+        // Pequeño movimiento de los brazos (Efecto hidráulico)
+        titanGroup.children.forEach((child, index) => {
+            if(index > 3) { // Seleccionando antebrazos
+                child.position.y += Math.sin(time * 2) * 0.001;
+            }
+        });
 
         renderer.render(scene, camera);
     }
