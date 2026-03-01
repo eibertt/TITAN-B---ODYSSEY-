@@ -1,0 +1,119 @@
+/* TITAN B - ODYSSEY | ESTÉTICA VISUAL NEXT-GEN */
+
+:root {
+    --neon-cian: #00e5ff;
+    --neon-fucsia: #ff00de;
+    --neon-oro: #ffcc00;
+    --glass-bg: rgba(0, 10, 20, 0.75);
+    --border-glow: 1px solid rgba(0, 229, 255, 0.3);
+}
+
+body, html {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    background-color: #000;
+    font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    color: white;
+}
+
+/* VIDEO DE FONDO INMERSIVO */
+#bg-video {
+    position: fixed;
+    top: 0;
+    left: 0;
+    min-width: 100%;
+    min-height: 100%;
+    z-index: -2;
+    object-fit: cover;
+    filter: brightness(0.4) contrast(1.2);
+}
+
+.overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: radial-gradient(circle, transparent 20%, rgba(0,0,0,0.8) 100%);
+    z-index: -1;
+}
+
+/* PANELES HOLOGRÁFICOS */
+.hologram-panel {
+    background: var(--glass-bg);
+    backdrop-filter: blur(15px);
+    border: var(--border-glow);
+    border-radius: 12px;
+    box-shadow: 0 0 20px rgba(0, 229, 255, 0.1);
+}
+
+.neon-text {
+    font-size: 2.2rem;
+    font-weight: 800;
+    color: white;
+    text-shadow: 0 0 10px var(--neon-cian), 0 0 20px var(--neon-cian);
+    letter-spacing: -1px;
+}
+
+/* BARRA DE PROGRESO DE ALTA DEFINICIÓN */
+.progress-container {
+    width: 100%;
+    height: 6px;
+    background: rgba(255,255,255,0.05);
+    border-radius: 3px;
+    margin-top: 8px;
+    overflow: hidden;
+}
+
+.progress-fill {
+    width: 15%;
+    height: 100%;
+    background: linear-gradient(90deg, var(--neon-cian), var(--neon-fucsia));
+    box-shadow: 0 0 15px var(--neon-cian);
+    transition: width 0.5s ease;
+}
+
+/* BARRA DE NAVEGACIÓN TÁCTICA */
+.nav-bar {
+    position: fixed;
+    bottom: 20px;
+    left: 5%;
+    width: 90%;
+    height: 65px;
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    background: rgba(0, 0, 0, 0.8);
+    backdrop-filter: blur(20px);
+    border: var(--border-glow);
+    border-radius: 50px;
+    z-index: 100;
+}
+
+.nav-item {
+    font-size: 0.7rem;
+    font-weight: bold;
+    text-transform: uppercase;
+    color: #666;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.nav-item.active, .nav-item:hover {
+    color: var(--neon-cian);
+    text-shadow: 0 0 10px var(--neon-cian);
+    transform: scale(1.1);
+}
+
+/* CONTENEDOR DEL ROBOT */
+#robot-view {
+    cursor: pointer;
+    transition: transform 0.1s active;
+}
+
+#robot-view:active {
+    transform: scale(0.98);
+}
