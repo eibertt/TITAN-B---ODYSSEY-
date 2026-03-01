@@ -54,9 +54,16 @@
         </nav>
     </div>
 
-    <script src="config.js"></script>
-    <script type="module" src="robot_3d.js"></script>
+        <script src="config.js"></script>
     <script src="game_logic.js"></script>
+    <script src="ui_effects.js"></script>
+    
+    <script type="module">
+        import { init3D } from './robot_3d.js';
+        // Forzamos un pequeño retraso para que el contenedor esté listo
+        setTimeout(init3D, 100);
+    </script>
+
 
     <script>
         // Simulador de carga para el Preloader
