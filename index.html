@@ -5,85 +5,72 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>TITAN B - ODYSSEY 3D</title>
     <link rel="stylesheet" href="styles.css">
+    <style>
+        body, html { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; background: #000; }
+        #galaxy-bg { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -2; }
+        #robot-view { width: 100%; height: 45vh; margin-top: 10px; position: relative; z-index: 5; }
+        #preloader { position:fixed; top:0; left:0; width:100%; height:100%; background:#000; z-index:9999; display:flex; flex-direction:column; justify-content:center; align-items:center; }
+    </style>
 </head>
 <body>
 
-    <div id="preloader" style="position:fixed; top:0; left:0; width:100%; height:100%; background:#000; z-index:9999; display:flex; flex-direction:column; justify-content:center; align-items:center;">
-        <div style="color:#00e5ff; font-family:monospace; margin-bottom:20px; letter-spacing:5px;">TITAN B - LOADING</div>
+    <div id="preloader">
+        <div style="color:#00e5ff; font-family:monospace; margin-bottom:20px; letter-spacing:5px; text-shadow: 0 0 10px #00e5ff;">TITAN B - LOADING</div>
         <div style="width:200px; height:2px; background:#111; border:1px solid #00e5ff;">
-            <div id="load-bar" style="width:0%; height:100%; background:#00e5ff; box-shadow:0 0 15px #00e5ff;"></div>
+            <div id="load-bar" style="width:0%; height:100%; background:#00e5ff; box-shadow: 0 0 10px #00e5ff; transition: width 0.3s;"></div>
         </div>
     </div>
 
-    <video autoplay muted loop id="bg-video">
-        <source src="fondo.mp4" type="video/mp4">
-    </video>
-
-    <div class="overlay"></div>
-
+    <canvas id="galaxy-bg"></canvas>
+    
     <div id="game-container">
-        <header class="hologram-panel" style="display:flex; justify-content:space-between; padding:15px; margin:10px;">
+        <header class="hologram-panel" style="display:flex; justify-content:space-between; padding:15px; margin:10px; background: rgba(0,20,30,0.6); border: 1px solid rgba(0,229,255,0.3); border-radius: 10px;">
             <div class="stat-box">
-                <small style="color:#ff00de">RECURSOS</small>
-                <div id="coin-balance" class="neon-text">0</div>
+                <small style="color:#ff00de;">T-COINS</small>
+                <div id="coin-balance" style="font-size: 1.8rem; color: #00e5ff; font-family: monospace;">0.00</div>
             </div>
             <div class="stat-box" style="text-align:right;">
-                <small>ESTADO</small>
-                <div id="system-status" style="color:#00ff88;">SYNC OK</div>
+                <small>SYSTEM</small>
+                <div id="system-status" style="color:#00ff88; font-weight: bold;">ONLINE</div>
             </div>
         </header>
 
-        <div id="robot-view" style="width:100%; height:400px; position:relative;">
-            </div>
-
-        <div class="hologram-panel" style="margin:10px; padding:10px;">
-            <div style="display:flex; justify-content:space-between; font-size:0.7rem; color:#00e5ff;">
-                <span>SYNC: <b id="rank-display">RECLUTA</b></span>
-                <span id="xp-text">0 / 5000 XP</span>
-            </div>
-            <div class="progress-container">
-                <div id="xp-bar" class="progress-fill"></div>
-            </div>
-        </div>
+        <div id="robot-view"></div>
 
         <nav class="nav-bar">
-            <div class="nav-item active" onclick="location.reload()">HOME</div>
-            <div class="nav-item" onclick="abrirTienda()">SHIPS</div>
-            <div class="nav-item" onclick="abrirReferidos()">FRIENDS</div>
-            <div class="nav-item" onclick="conectarWallet()">WALLET</div>
+            <div class="nav-item active">HOME</div>
+            <div class="nav-item">SHIPS</div>
+            <div class="nav-item">FRIENDS</div>
+            <div class="nav-item">WALLET</div>
         </nav>
     </div>
 
-        <script src="config.js"></script>
+    <script src="config.js"></script>
     <script src="game_logic.js"></script>
-    <script src="ui_effects.js"></script>
+    <script src="galaxy_engine.js"></script>
     
     <script type="module">
         import { init3D } from './robot_3d.js';
-        // Forzamos un pequeño retraso para que el contenedor esté listo
-        setTimeout(init3D, 100);
-    </script>
-
-
-    <script>
-        // Simulador de carga para el Preloader
+        
         window.addEventListener('load', () => {
             const bar = document.getElementById('load-bar');
-            let width = 0;
-            const interval = setInterval(() => {
-                if (width >= 100) {
-                    clearInterval(interval);
-                    document.getElementById('preloader').style.display = 'none';
-                } else {
-                    width += 5;
-                    bar.style.width = width + '%';
+            let w = 0;
+            const loader = setInterval(() => {
+                w += 10;
+                if(bar) bar.style.width = w + '%';
+                
+                if (w >= 100) {
+                    clearInterval(loader);
+                    setTimeout(() => {
+                        document.getElementById('preloader').style.display = 'none';
+                        // Iniciamos el robot 3D
+                        if (typeof init3D === 'function') {
+                            init3D();
+                        }
+                    }, 500);
                 }
-            }, 50);
+            }, 100);
         });
-
-        function abrirTienda() {
-            alert(`ASTILLERO TITAN B\n\n1. Scout: $${TITAN_CONFIG.SHIPS[0].price_usdt} USDT\n2. Miner: $${TITAN_CONFIG.SHIPS[1].price_usdt} USDT\n3. TITAN: $${TITAN_CONFIG.SHIPS[2].price_usdt} USDT`);
-        }
     </script>
 </body>
 </html>
