@@ -1,95 +1,58 @@
-import * as THREE from 'https://cdn.skypack.dev/three@0.129.0/build/three.module.js';
-import { GLTFLoader } from 'https://cdn.skypack.dev/three@0.129.0/examples/jsm/loaders/GLTFLoader.js';
-
-let scene, camera, renderer, robot;
+import * as THREE from 'https://unpkg.com/three@0.150.1/build/three.module.js';
 
 export function init3D() {
     const container = document.getElementById('robot-view');
-    if(!container) return;
+    if (!container) return;
 
-    // SCENE & BACKGROUND
-    scene = new THREE.Scene();
-    
-    // CAMERA
-    camera = new THREE.PerspectiveCamera(75, container.clientWidth / container.clientHeight, 0.1, 1000);
-    camera.position.set(0, 1.5, 4); // Elevada para ver el torso
-
-    // RENDERER (Con fondo transparente para ver tu galaxia)
-    renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(75, container.clientWidth / container.clientHeight, 0.1, 1000);
+    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
     renderer.setSize(container.clientWidth, container.clientHeight);
-    container.innerHTML = "";
+    container.innerHTML = ""; 
     container.appendChild(renderer.domElement);
 
-    // --- ILUMINACIÓN CIBERPUNK (Basada en la Imagen de Referencia) ---
-    const ambientLight = new THREE.AmbientLight(0x111111, 1); // Luz ambiental muy tenue
-    scene.add(ambientLight);
-
-    // Luz de Fusión (Pecho - Cyan/Azul)
-    const reactorLight = new THREE.PointLight(0x00e5ff, 5, 10);
-    reactorLight.position.set(0, 1.5, 0.5);
-    scene.add(reactorLight);
-
-    // Luz de Acento 1 (Lado Derecho - Rosa/Púrpura Neón)
-    const purpleLight = new THREE.PointLight(0xff00de, 3, 15);
-    purpleLight.position.set(2, 2, 1);
-    scene.add(purpleLight);
-
-    // Luz de Acento 2 (Lado Izquierdo - Azul Eléctrico)
-    const blueLight = new THREE.PointLight(0x00aaff, 2, 15);
-    blueLight.position.set(-2, 1, 1);
-    scene.add(blueLight);
-
-    // CARGA DEL MODELO AVANZADO
-    const loader = new GLTFLoader();
-    
-    // Mostrar mensaje de carga profesional
-    container.innerHTML = "<div style='color:#00e5ff; font-family:monospace; text-align:center; padding-top:100px;'>FORGING ARMOR...</div>";
-
-    loader.load('titan_robot.glb', (gltf) => {
-        container.innerHTML = ""; // Limpiar mensaje
-        container.appendChild(renderer.domElement);
-        
-        robot = gltf.scene;
-        
-        // --- TEXTURIZADO Y EFECTO DE NEÓN ---
-        robot.traverse((child) => {
-            if (child.isMesh) {
-                // Hacemos que la armadura sea metálica y oscura
-                child.material.metalness = 1;
-                child.material.roughness = 0.3;
-                child.material.color.setHex(0x222222); // Armadura negra/gris
-
-                // Si el modelo tiene partes "emissive", las encendemos
-                if(child.material.emissive) {
-                    child.material.emissive.setHex(0x00e5ff); // Cyan por defecto
-                    child.material.emissiveIntensity = 2;
-                }
-            }
-        });
-
-        // Posicionamiento
-        robot.scale.set(1.5, 1.5, 1.5);
-        robot.position.set(0, 0, 0);
-        robot.rotation.y = Math.PI / 8; // Ligeramente de lado
-
-        scene.add(robot);
-        console.log("TITAN B: Forja completada.");
-    }, undefined, (error) => {
-        container.innerHTML = "<div style='color:#ff0033; font-family:monospace;'>ERROR: Missing titan_robot.glb</div>";
-        console.error("No se pudo cargar la armadura:", error);
+    // --- MATERIALES METÁLICOS REALISTAS ---
+    const armorMaterial = new THREE.MeshStandardMaterial({ 
+        color: 0x1a1a1a, 
+        metalness: 1, 
+        roughness: 0.15, // Esto da el brillo de "espejo"
     });
+    const neonMaterial = new THREE.MeshBasicMaterial({ color: 0x00e5ff });
 
-    animate();
-}
+    // GRUPO DEL ROBOT
+    const robot = new THREE.Group();
+    const torso = new THREE.Mesh(new THREE.BoxGeometry(1.2, 1.8, 0.7), armorMaterial);
+    const head = new THREE.Mesh(new THREE.BoxGeometry(0.7, 0.7, 0.6), armorMaterial);
+    head.position.y = 1.3;
+    
+    // REACTOR (Luz central)
+    const reactor = new THREE.Mesh(new THREE.SphereGeometry(0.25, 32, 32), neonMaterial);
+    reactor.position.set(0, 0.4, 0.36);
 
-function animate() {
-    requestAnimationFrame(animate);
-    if (robot) {
-        // Animación de respiración suave
+    robot.add(torso, head, reactor);
+    scene.add(robot);
+
+    // --- ILUMINACIÓN DE ESTUDIO (Para el reflejo) ---
+    const topLight = new THREE.DirectionalLight(0xffffff, 2);
+    topLight.position.set(0, 10, 10);
+    scene.add(topLight);
+
+    const cyanLight = new THREE.PointLight(0x00e5ff, 3, 20);
+    cyanLight.position.set(5, 5, 5);
+    scene.add(cyanLight);
+
+    const pinkLight = new THREE.PointLight(0xff00de, 2, 20);
+    pinkLight.position.set(-5, -5, 5);
+    scene.add(pinkLight);
+
+    camera.position.z = 4.5;
+
+    function animate() {
+        requestAnimationFrame(animate);
         const time = Date.now() * 0.001;
-        robot.position.y = Math.sin(time) * 0.05;
-        // Rotación lenta para mostrar la armadura
-        robot.rotation.y += 0.002; 
+        robot.position.y = Math.sin(time) * 0.15; // Flotación
+        robot.rotation.y += 0.005; // Rotación de exposición
+        renderer.render(scene, camera);
     }
-    renderer.render(scene, camera);
+    animate();
 }
